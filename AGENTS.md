@@ -8,6 +8,9 @@ work, the rules every change follows, and what "done" means.
 These rules apply to every contributor: a person, a coding agent, or an
 AI tool working on someone's behalf.
 
+> **Hackathon workspace.** In this repository, [HACKATHON.md](HACKATHON.md)
+> also applies and wins where the two differ.
+
 ## Start here
 
 | Read | For |
