@@ -11,7 +11,6 @@ import os
 import shutil
 import signal
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -176,14 +175,14 @@ def test_a_listen_record_that_is_not_one_is_ignored(tmp_path, text):
     assert management.recorded_webui_listen(tmp_path / "webui-listen.json") is None
 
 
-def _run_webui(tmp_path, config_text: str, *, port_offset: int = 0):
+def _run_webui(tmp_path, webui_server_argv, config_text: str, *, port_offset: int = 0):
     config_path = tmp_path / "config.yaml"
     config_path.write_text(config_text)
     port = 18000 + (os.getpid() + port_offset) % 1000
     proc = subprocess.Popen(
-        [sys.executable, "-m", "frfw.webui.server", "--config", str(config_path), "--port", str(port),
-         "--cert", str(tmp_path / "cert.pem"), "--key", str(tmp_path / "key.pem"),
-         "--listen-record", str(tmp_path / "webui-listen.json")],
+        webui_server_argv("--config", str(config_path), "--port", str(port),
+                          "--cert", str(tmp_path / "cert.pem"), "--key", str(tmp_path / "key.pem"),
+                          "--listen-record", str(tmp_path / "webui-listen.json")),
         stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
         env={**os.environ, "OPENSSL_CONF": "/dev/null"},
     )
@@ -203,19 +202,19 @@ def _run_webui(tmp_path, config_text: str, *, port_offset: int = 0):
 
 
 @pytest.mark.skipif(not shutil.which("ss") or not shutil.which("openssl"), reason="needs ss and openssl")
-def test_the_webui_listens_where_the_applied_config_says(tmp_path):
+def test_the_webui_listens_where_the_applied_config_says(tmp_path, webui_server_argv):
     """config.yaml names a LAN address the router doesn't run (a failed
     apply, rolled back): the real fr-webui listens where the last apply
     recorded, so it stays reachable."""
     management.record_webui_listen(["127.0.0.1", "10.98.0.1"], tmp_path / "webui-listen.json")
-    listening = _run_webui(tmp_path, build_skeleton_config("eth0", "eth1", lan_address="10.99.0.1/24"))
+    listening = _run_webui(tmp_path, webui_server_argv, build_skeleton_config("eth0", "eth1", lan_address="10.99.0.1/24"))
     assert listening == {"127.0.0.1", "10.98.0.1"}
 
 
 @pytest.mark.skipif(not shutil.which("ss") or not shutil.which("openssl"), reason="needs ss and openssl")
-def test_the_webui_does_not_listen_on_every_address(tmp_path):
+def test_the_webui_does_not_listen_on_every_address(tmp_path, webui_server_argv):
     """Start the real fr-webui with a skeleton config: it must listen on
     loopback and the LAN address (not configured on this machine --
     IP_FREEBIND), and not on 0.0.0.0."""
-    listening = _run_webui(tmp_path, build_skeleton_config("eth0", "eth1", lan_address="10.99.0.1/24"), port_offset=1)
+    listening = _run_webui(tmp_path, webui_server_argv, build_skeleton_config("eth0", "eth1", lan_address="10.99.0.1/24"), port_offset=1)
     assert listening == {"127.0.0.1", "10.99.0.1"}

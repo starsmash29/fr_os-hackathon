@@ -12,7 +12,6 @@ import signal
 import socket
 import ssl
 import subprocess
-import sys
 import time
 
 import pytest
@@ -51,7 +50,7 @@ def _handshake(port: int, version: ssl.TLSVersion) -> str | None:
 
 
 @pytest.fixture
-def webui(tmp_path):
+def webui(tmp_path, webui_server_argv):
     started = []
 
     def start(pqc_enabled: bool) -> int:
@@ -61,8 +60,8 @@ def webui(tmp_path):
         config.write_text(yaml.safe_dump(raw))
         port = 19000 + os.getpid() % 500 + (500 if pqc_enabled else 0)
         proc = subprocess.Popen(
-            [sys.executable, "-m", "frfw.webui.server", "--config", str(config), "--port", str(port),
-             "--cert", str(tmp_path / "cert.pem"), "--key", str(tmp_path / "key.pem")],
+            webui_server_argv("--config", str(config), "--port", str(port),
+                              "--cert", str(tmp_path / "cert.pem"), "--key", str(tmp_path / "key.pem")),
             stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
             env={**os.environ, "OPENSSL_CONF": "/dev/null"},
         )
