@@ -10,6 +10,7 @@ kernel nftables state.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import threading
 from pathlib import Path
@@ -25,9 +26,11 @@ from frfw import conntrack as conntrack_mod
 from frfw import hwinfo as hwinfo_mod
 from frfw import ids_quarantine as ids_quarantine_mod
 from frfw import iot_isolation as iot_isolation_mod
+from frfw import transaction as transaction_mod
 from frfw import ztna as ztna_mod
 from frfw.admin_account import hash_password
 from frfw.helper import client
+from frfw.helper.peer import PeerPolicy
 from frfw.helper.server import ApplyHelperServer
 
 EXAMPLE_CONFIG = Path(__file__).resolve().parent.parent / "examples" / "config.yaml"
@@ -49,9 +52,32 @@ def neighbours(monkeypatch):
     return table
 
 
+class _RealEuid:
+    """`os`, but with the process's real effective uid."""
+
+    def __init__(self, euid: int):
+        self._euid = euid
+
+    def geteuid(self) -> int:
+        return self._euid
+
+    def __getattr__(self, name):
+        return getattr(os, name)
+
+
 @pytest.fixture
 def running_server(tmp_path, monkeypatch, neighbours):
+    # The peer policy admits root and the helper's own uid. Taken before
+    # os.geteuid is faked below: unfaked, the test client -- the developer's
+    # own uid when the suite runs unprivileged -- is the helper's own uid
+    # and is let in, as it is in a development run (hackathon issue #4).
+    peer_policy = PeerPolicy.from_system()
+    real_euid = os.geteuid()
     monkeypatch.setattr("os.geteuid", lambda: 0)
+    # The files are still written by the real user: the config writers
+    # chown only as root, and an unprivileged chown to root fails.
+    for writer in (transaction_mod, apply_confirm):
+        monkeypatch.setattr(writer, "os", _RealEuid(real_euid))
 
     # Simulate "a ruleset becomes loaded after the first real apply", so a
     # second apply exercises the backup path and rollback has something to
@@ -182,6 +208,7 @@ def running_server(tmp_path, monkeypatch, neighbours):
         adblock_hosts_path=adblock_hosts_path,
         kea_leases_path=tmp_path / "kea-leases4.csv",
         adblock_category_dir=tmp_path / "adblock.d",
+        peer_policy=peer_policy,
     )
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -842,7 +869,7 @@ def test_the_helper_confirms_by_id_only(helper):
     assert client.apply_config(socket_path=sock, confirm=True)["ok"], "a confirmed apply blocks nothing"
 
 
-def test_the_helper_goes_back_on_request(helper, monkeypatch):
+def test_the_helper_goes_back_on_request(helper, monkeypatch, tmp_path):
     client, sock, config_path, edit = helper
     alerts = []
     monkeypatch.setattr(apply_confirm, "_alert", alerts.append)
@@ -850,7 +877,19 @@ def test_the_helper_goes_back_on_request(helper, monkeypatch):
     before = config_path.read_text()
     edit(hostname="changed")
     client.apply_config(socket_path=sock, confirm=True)
+    from frfw import provision
+
+    backup_dirs = []
+    real_apply_ruleset = provision.apply_ruleset
+
+    def recording_apply_ruleset(ruleset, **kw):
+        backup_dirs.append(kw["backup_dir"])
+        return real_apply_ruleset(ruleset, **kw)
+
+    monkeypatch.setattr(provision, "apply_ruleset", recording_apply_ruleset)
     reply = client.apply_revert(sock)
+    # It goes back through the helper's own backup dir, not the host's.
+    assert backup_dirs == [tmp_path / "backups"]
     assert reply["ok"] and "the admin went back" in reply["message"]
     assert config_path.read_text() == before and paths.APPLIED_CONFIG_PATH.read_text() == before
     assert client.apply_status(sock) == {"ok": True, "pending": None, "rejected": True}
