@@ -19,6 +19,7 @@ itself for local development/testing.
 from __future__ import annotations
 
 import argparse
+import functools
 import ipaddress
 import json
 import os
@@ -97,7 +98,13 @@ def _handle_request(request: dict, server: "ApplyHelperServer") -> dict:
 
         if cmd == "apply_revert":
             with apply_confirm.locked():
-                messages = apply_confirm.revert("the admin went back", config_path=server.config_path)
+                # Back through the paths this helper applies with, not the
+                # defaults (hackathon issue #4: a test helper's revert wrote
+                # the host's /etc/fr_os/backups).
+                messages = apply_confirm.revert(
+                    "the admin went back", config_path=server.config_path,
+                    apply=functools.partial(apply_all, backup_dir=server.backup_dir,
+                                            kea_config_path=server.kea_config_path))
             return {"ok": True, "message": messages[0]}
 
         if cmd == "restore_rejected":
