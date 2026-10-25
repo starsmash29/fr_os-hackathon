@@ -1,8 +1,41 @@
+import sys
 from pathlib import Path
 
 import pytest
 
 EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "examples"
+
+
+#: Runs the real fr-webui with its state directory (session secret key,
+#: sessions, admin account, login guard) moved into the test's own
+#: directory: the webUI modules take these paths when imported, so the
+#: move has to happen in the child before they are. Without it a run as
+#: root wrote the host's /etc/fr_os/webui/secret.key.
+_WEBUI_IN_STATE_DIR = """
+import sys
+from pathlib import Path
+from frfw import paths
+state = Path(sys.argv[1])
+paths.WEBUI_STATE_DIR = state
+paths.WEBUI_SECRET_KEY_PATH = state / "secret.key"
+paths.WEBUI_AUTH_PATH = state / "auth.json"
+paths.LOGIN_GUARD_STATE_PATH = state / "login_guard.json"
+from frfw.webui.server import main
+sys.exit(main(sys.argv[2:]))
+"""
+
+
+@pytest.fixture
+def webui_server_argv(tmp_path):
+    """The argv that starts the real fr-webui with `args`, its state kept
+    under this test's tmp_path."""
+    state = tmp_path / "webui-state"
+    state.mkdir(mode=0o700, exist_ok=True)
+
+    def argv(*args: str) -> list[str]:
+        return [sys.executable, "-c", _WEBUI_IN_STATE_DIR, str(state), *args]
+
+    return argv
 
 
 @pytest.fixture
