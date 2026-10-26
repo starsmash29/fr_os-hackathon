@@ -3,86 +3,93 @@ version: alpha
 name: FR_OS Control Plane
 description: >-
   Visual identity of the FR_OS router webUI: a dark, dense, calm control
-  plane for a firewall/router run at home or in a small office. Designed
-  in the FR_OS Google Stitch project; the values below are the ones
+  plane for a firewall/router run at home or in a small office. Layout
+  from the FR_OS Google Stitch project, colours and type from the FR_OS
+  brand manual (docs/brand-manual.md); the values below are the ones
   src/frfw/webui/static/fros.css actually uses.
 colors:
-  primary: "#4CD7F6"
-  primary-strong: "#06B6D4"
-  primary-hover: "#ACEDFF"
-  on-primary: "#003640"
-  primary-tint: "#122E3C"
-  surface-lowest: "#070F19"
-  background: "#0C141F"
-  surface-low: "#141C27"
-  surface: "#18202B"
-  surface-high: "#232A36"
-  surface-highest: "#2D3541"
-  on-surface: "#DBE3F2"
+  primary: "#00E5FF"
+  primary-strong: "#0052FF"
+  primary-hover: "#1F6BFF"
+  on-primary: "#FFFFFF"
+  primary-tint: "#0A1A3D"
+  chrome: "#C0C0C0"
+  surface-lowest: "#05080E"
+  background: "#080C14"
+  surface-low: "#0B111D"
+  surface: "#0F172A"
+  surface-high: "#1E293B"
+  surface-highest: "#273449"
+  on-surface: "#F8FAFC"
   on-surface-strong: "#FFFFFF"
-  on-surface-variant: "#BCC9CD"
-  outline: "#869397"
-  outline-variant: "#3D494C"
-  hairline: "#2B353B"
-  success: "#4EDEA3"
-  success-container: "#1B3336"
-  warning: "#F5C451"
-  warning-container: "#2F302C"
-  error: "#FFB4AB"
-  error-strong: "#93000A"
-  error-container: "#3D131E"
+  on-surface-variant: "#94A3B8"
+  outline: "#64748B"
+  outline-variant: "#1E293B"
+  hairline: "#1E293B"
+  success: "#00E676"
+  success-container: "#0A2A20"
+  warning: "#FFB300"
+  warning-container: "#2A2210"
+  error: "#FF3366"
+  error-strong: "#A3002A"
+  error-container: "#2E0F1C"
   on-error-container: "#FFDAD6"
   info: "#D0BCFF"
   info-container: "#272C3D"
   on-info-container: "#E9DDFF"
 typography:
-  headline-lg:
-    fontFamily: Geist
-    fontSize: 24px
-    fontWeight: 600
+  display:
+    fontFamily: Orbitron
+    fontSize: 22px
+    fontWeight: 700
     lineHeight: 32px
-    letterSpacing: -0.015em
+    letterSpacing: 0.02em
   headline-md:
-    fontFamily: Geist
+    fontFamily: Inter
     fontSize: 18px
     fontWeight: 600
     lineHeight: 24px
     letterSpacing: -0.01em
   headline-sm:
-    fontFamily: Geist
+    fontFamily: Inter
     fontSize: 15px
     fontWeight: 600
     lineHeight: 20px
   brand:
-    fontFamily: Geist
+    fontFamily: Orbitron
     fontSize: 16px
-    fontWeight: 700
+    fontWeight: 800
     lineHeight: 20px
-    letterSpacing: -0.01em
+    letterSpacing: 0.04em
   body-md:
-    fontFamily: JetBrains Mono
-    fontSize: 13px
+    fontFamily: Inter
+    fontSize: 14px
     fontWeight: 400
-    lineHeight: 20px
+    lineHeight: 22px
   body-sm:
-    fontFamily: JetBrains Mono
+    fontFamily: Inter
     fontSize: 12px
     fontWeight: 400
     lineHeight: 18px
   label-md:
-    fontFamily: JetBrains Mono
+    fontFamily: Inter
     fontSize: 11px
     fontWeight: 600
     lineHeight: 16px
     letterSpacing: 0.05em
   label-sm:
-    fontFamily: JetBrains Mono
+    fontFamily: Inter
     fontSize: 10px
     fontWeight: 600
     lineHeight: 14px
     letterSpacing: 0.08em
-  metric-display:
+  code:
     fontFamily: JetBrains Mono
+    fontSize: 12px
+    fontWeight: 400
+    lineHeight: 18px
+  metric-display:
+    fontFamily: Inter
     fontSize: 28px
     fontWeight: 700
     lineHeight: 34px
@@ -322,16 +329,17 @@ components:
 ## Overview
 
 FR_OS is a firewall and router operating system for homelab and
-small-office hardware. Its webUI is a **dark control plane**: navy
-surfaces, one cyan accent, and a monospace body that makes addresses,
-ports, MACs and fingerprints read like the machine values they are. It
+small-office hardware. Its webUI is a **dark control plane**: obsidian
+surfaces, Cyber Cobalt and Electric Cyan from the brand, Inter for
+reading and JetBrains Mono wherever a value is a machine value
+(addresses, ports, MACs, fingerprints, config). It
 should feel like a precise instrument -- modern and calm, never a
 "hacker movie" -- and stay friendly for an owner who is technically
 curious but not a network engineer.
 
-The design comes from the FR_OS Google Stitch project (dark theme, Geist
-and JetBrains Mono, cyan `#06B6D4` seed colour). The Stitch screens were
-the reference; the webUI implements them for the features FR_OS actually
+The layout comes from the FR_OS Google Stitch project; the colours and
+fonts come from the FR_OS brand manual (docs/brand-manual.md, 2026-10).
+The Stitch screens were the reference; the webUI implements them for the features FR_OS actually
 has, with real data only. Stitch screens for features that don't exist yet
 are listed in ROADMAP.md, not mocked up in the product.
 
@@ -340,51 +348,61 @@ Principles, in priority order:
 1. **True before pretty.** Every number, state and badge comes from the
    running system or the saved config. A figure that can't be read shows
    "-", never a plausible-looking placeholder.
-2. **Local only.** The stylesheet, both fonts and the icon sprite are
+2. **Local only.** The stylesheet, the three fonts and the icon sprite are
    served by the router itself. Nothing is fetched from the internet; the
    UI works with the WAN down. No JavaScript framework; the only script is
    the live-log stream on the TLS SNI Filter screen.
-3. **One accent.** Cyan marks what is interactive or current (primary
-   buttons, the active nav item, links, meters). Green, amber, red and
-   violet are reserved for states.
+3. **One accent family.** Cobalt fills what you press (primary buttons,
+   avatar); cyan marks what is interactive or current at text level
+   (links, the active nav item, focus rings, meters). Green, amber, red
+   and violet are reserved for states.
 4. **Dense, not cramped.** Many facts per screen, separated by hairlines
    and consistent spacing rather than heavy boxes.
 
 ## Colors
 
-The palette is Material-3-style tonal navy, from `surface-lowest`
-(#070F19, top bar, sidebar, inputs, consoles) through `background`
-(#0C141F, the page) and `surface-low` (#141C27, cards) up to
-`surface-highest` (#2D3541, progress tracks, hover states).
+The palette follows the brand manual. Surfaces run from `surface-lowest`
+(#05080E, top bar, inputs, consoles) through `background` (Obsidian Void
+#080C14, the page) and `surface` (#0F172A, cards) up to `surface-highest`
+(#273449, progress tracks, hover states).
 
-- **Primary cyan (#4CD7F6)** -- primary buttons, links, active navigation,
-  meter fills (gradient from `primary-strong` #06B6D4), focus rings.
-  Text on it is `on-primary` (#003640).
-- **Text** -- `on-surface` (#DBE3F2) for body, pure white for headings
-  and key figures, `on-surface-variant` (#BCC9CD) for labels and help,
-  `outline` (#869397) for metadata and placeholders.
-- **Lines** -- `hairline` (#2B353B, the outline-variant at 55 % over a
-  card) between rows and around cards; `outline-variant` (#3D494C) for
+- **Cyber Cobalt (#0052FF)** -- `primary-strong`: filled primary buttons,
+  the avatar, the start of meter fills. Text on it is white (6.5:1).
+  Cobalt is *not* used for text on the dark background: it measures
+  3.9:1 there, under the manual's own 4.5:1 floor.
+- **Electric Cyan (#00E5FF)** -- `primary`: links, active navigation,
+  focus rings, the end of meter fills, the badge for informational
+  states.
+- **Tech Chrome (#C0C0C0)** -- reserved for the brand mark and metal-like
+  details; not a UI text colour.
+- **Text** -- `on-surface` (#F8FAFC) for body, pure white for headings
+  and key figures, `on-surface-variant` (#94A3B8) for labels and help,
+  `outline` (#64748B) for metadata and placeholders.
+- **Lines** -- `hairline` (#1E293B) between rows and around cards and for
   input borders.
-- **States** -- success green #4EDEA3 (running, on, accept, valid),
-  warning amber #F5C451 (not yet active, reject, IoT), error salmon
-  #FFB4AB on a deep red container (not running, drop, blocked, isolated,
+- **States** -- success green #00E676 (running, on, accept, valid),
+  warning amber #FFB300 (not yet active, reject, IoT), alert red
+  #FF3366 on a deep red container (not running, drop, blocked, isolated,
   destructive buttons), info violet #D0BCFF (the read-only banner).
-- **Containers** are the state colour at 10-32 % opacity; the hex values
+- **Containers** are the state colour at 10-16 % opacity; the hex values
   above are what they resolve to on a card.
 
 ## Typography
 
-- **Geist** (variable, OFL) for page titles, card titles, the brand and
-  service names.
-- **JetBrains Mono** (variable, OFL) for everything else: body text,
-  tables, forms, badges, figures. Machine values stay aligned and
-  unambiguous (0/O, 1/l).
-- Labels, table headers and tile captions are small uppercase mono with
+- **Orbitron** (variable, OFL) for page titles (`h1`) and the brand
+  name only. It is wide and technical; used for anything longer it gets
+  hard to read. It has no latin-ext glyphs, so an accented title falls
+  back to Inter.
+- **Inter** (variable, OFL) for body text, card titles, tables, forms,
+  badges and figures.
+- **JetBrains Mono** (variable, OFL) for code, config, logs and machine
+  values (`code`, `pre`, `.mono`, the live log): aligned and unambiguous
+  (0/O, 1/l).
+- Labels, table headers and tile captions are small uppercase Inter with
   wide tracking (`label-md` / `label-sm`).
-- Key figures use `metric-display`: 28px bold mono, tight tracking.
-- Both fonts ship as latin + latin-ext subsets (about 100 KB in total)
-  under `static/fonts/`, with their licences.
+- Key figures use `metric-display`: 28px bold, tight tracking.
+- The fonts ship as variable woff2 subsets (latin, plus latin-ext for
+  Inter and JetBrains Mono) under `static/fonts/`, with their licences.
 
 ## Layout
 
@@ -429,8 +447,9 @@ pills -- they read as instrument labels.
 
 ## Components
 
-- **Top bar / brand**: shield icon in a cyan-tinted square, "FR_OS" in
-  Geist cyan, a chip with version and codename, the hostname with a green
+- **Top bar / brand**: shield icon in a cobalt-tinted square (until the
+  vector raven monogram from the brand manual exists), "FR_OS" in
+  Orbitron, a chip with version and codename, the hostname with a green
   dot, then user avatar, name and role ("Admin" / "Read-only").
 - **Sidebar**: section headings in `label-sm` outline grey; items with a
   Material Symbols icon; the current page gets the cyan tint, cyan text
@@ -438,7 +457,7 @@ pills -- they read as instrument labels.
 - **Stat tile**: uppercase caption, icon in a small square, a
   `metric-display` figure (with an optional unit in cyan), one line of
   context. Tiles that correspond to a screen are links to it.
-- **Service row**: status dot, name (Geist), one-line description, state
+- **Service row**: status dot, name (Inter), one-line description, state
   badge. States are "running"/"not running" where a daemon can be
   checked, otherwise "on"/"off" from the config.
 - **Tables**: uppercase header row on `surface`, hairline row dividers,
