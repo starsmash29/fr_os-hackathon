@@ -4897,8 +4897,9 @@ DESIGN.md format.
   the small class vocabulary the templates already used (`card`, `badge`,
   `flash-*`, `muted`, tables, forms). No build step, no Node dependency at
   runtime.
-- **Everything local.** Geist and JetBrains Mono ship as variable woff2
-  subsets (latin + latin-ext, ~100 KB, OFL licences alongside), icons as
+- **Everything local.** Inter, Orbitron and JetBrains Mono ship as variable
+  woff2 subsets (latin + latin-ext where the family has it, ~170 KB, OFL
+  licences alongside; the brand manual, docs/brand-manual.md, picks them), icons as
   one SVG sprite of the 47 Material Symbols in use (~21 KB, Apache-2.0),
   rebuilt by `scripts/build-webui-icons.py`. `/static` is mounted without
   login -- the sign-in page needs it and it holds nothing about the

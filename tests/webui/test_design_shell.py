@@ -22,7 +22,8 @@ REPO = Path(__file__).resolve().parents[2]
     [
         ("/static/fros.css", "text/css"),
         ("/static/icons.svg", "image/svg+xml"),
-        ("/static/fonts/geist-latin.woff2", "font/woff2"),
+        ("/static/fonts/inter-latin.woff2", "font/woff2"),
+        ("/static/fonts/orbitron-latin.woff2", "font/woff2"),
         ("/static/fonts/jetbrains-mono-latin.woff2", "font/woff2"),
     ],
 )
@@ -69,7 +70,7 @@ def test_every_static_file_is_packaged():
 
 
 def test_font_licences_ship_with_the_fonts():
-    for name in ("LICENSE-Geist.txt", "LICENSE-JetBrainsMono.txt"):
+    for name in ("LICENSE-Inter.txt", "LICENSE-Orbitron.txt", "LICENSE-JetBrainsMono.txt"):
         assert "SIL Open Font License" in (STATIC_DIR / "fonts" / name).read_text()
     assert "Apache License" in (STATIC_DIR / "LICENSE-MaterialSymbols.txt").read_text()
 
